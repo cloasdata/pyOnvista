@@ -1,1 +1,1 @@
-from .api import Instrument, CachedRequest, Request
+from .api import Instrument, CachedRequest, Request, InstrumentDatabase
