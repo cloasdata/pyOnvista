@@ -18,6 +18,11 @@ These data is polled every time get_quotes is called.
 However, it is possible to use CachedRequest instead of Request classe you poll against 
 an http cache stored locally after the first query. 
 
+## Limitations
+Does not work with ETFs or other Derivates. At the moment it does only support stocks.
+
+
+
 ## Installation:
     pip install pyonvista
 
