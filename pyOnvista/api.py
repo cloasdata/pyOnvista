@@ -328,7 +328,7 @@ class Instrument(InstrumentPersistenceMixin):
         response = self._request.request(url).text
         if not resolution in response:
             raise ValueError(f"Provided {resolution} is not in response {response}.")
-        # response of this a raw_json. It has some problems and will not fit directly
+        # response of this is a raw_json. It does not comply with a standard json and will not fit directly
         raw_quotes = self._prepare_json(response)
         # [timestamp,"open", "high", "low", "close", "volume"]
         next(iter(raw_quotes))
@@ -364,15 +364,31 @@ class Instrument(InstrumentPersistenceMixin):
 
 
 class InstrumentDatabase:
-    def __init__(self, path):
+    """
+    Provides interface to instrument shelve database
+    """
+    def __init__(self, path=""):
+        """
+        :param path: path to database. Default ""
+        """
         self.db_instrument = path + "/instrument_shelve"
 
     def instruments(self) -> typing.Iterable[Instrument]:
+        """
+        Iterator through all instrument in data base
+        :return: Instrument
+        """
         with shelve.open(self.db_instrument) as db:
             for cls_dict in db.values():
                 yield self._construct(cls_dict)
 
     def query(self, **kwargs) -> Instrument:
+        """
+        Query the data base by keyword
+
+        :key isin: isin string
+        :return: Instrument
+        """
         with shelve.open(self.db_instrument) as db:
             if "isin" in kwargs:
                 cls_dict = db[kwargs.pop("isin")]
