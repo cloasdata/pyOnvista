@@ -36,6 +36,13 @@ get_low = itemgetter(3)
 get_close = itemgetter(4)
 get_volume = itemgetter(5)
 
+tab_dict = {
+    "week": "T5",
+    "month": "M1",
+    "year": "J1",
+    "all": "MAX"
+}
+
 
 @dataclasses.dataclass
 class InstrumentQuote:
@@ -81,11 +88,11 @@ class Request:
         :return: tuple(response, status)
         """
         self._response = requests.get(
-                                url=url,
-                                headers=self._header.pop("headers", None),
-                                proxies=self._header.pop("proxies", None),
-                                timeout=self._header.pop("timeout", None)
-                                )
+            url=url,
+            headers=self._header.pop("headers", None),
+            proxies=self._header.pop("proxies", None),
+            timeout=self._header.pop("timeout", None)
+        )
         if self._response.status_code >= 400:
             raise requests.exceptions.HTTPError(self._response.status_code)
         else:
@@ -98,7 +105,8 @@ class CachedRequest(Request):
     it fires the http get to onvista.de
     The cache is highly recommended to avoid any abusing.
     """
-    def __init__(self, header: dict, path:str, validity: int ):
+
+    def __init__(self, header: dict, path: str, validity: int):
         super().__init__(header)
         self._validity = validity
         self._path = path
@@ -209,7 +217,6 @@ class Instrument(InstrumentPersistenceMixin):
             if not lazy_load:
                 self.update()
 
-
     @property
     def isin(self):
         return self._isin
@@ -317,7 +324,8 @@ class Instrument(InstrumentPersistenceMixin):
         """
         return [notation for notation in self.notations if notation.exchange == exchange][0]
 
-    def get_quotes(self, resolution: typing.Literal["week", "month", "year"], notation: Notation = None) -> list["InstrumentQuote"]:
+    def get_quotes(self, resolution: typing.Literal["week", "month", "year", "all"], notation: Notation = None) -> list[
+        "InstrumentQuote"]:
         """
         Delivers the quotes of the notation i.E market.
         :param resolution: literal["week", "month", "year"]
@@ -360,13 +368,15 @@ class Instrument(InstrumentPersistenceMixin):
     def _get_request_url(resolution: str, notation: Notation) -> str:
         return f'https://chartdata.onvista.de/minimal/?exchange={notation.exchange}&id={notation.id}' \
                f'&assetType=Stock&quality=realtime&callback=getChart{notation.id}{resolution}' \
-               f'&granularity={resolution}'
+               f'&granularity={resolution}' \
+               f'&tab={tab_dict[resolution]}'
 
 
 class InstrumentDatabase:
     """
     Provides interface to instrument shelve database
     """
+
     def __init__(self, path=""):
         """
         :param path: path to database. Default ""
