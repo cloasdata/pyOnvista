@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='pyOnvista',
-    version='0.50a',
+    version='0.60a',
     url="https://github.com/cloasdata/pyOnvista",
     license='MIT',
     license_files = ('LICENSE',),
