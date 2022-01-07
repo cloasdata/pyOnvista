@@ -60,6 +60,17 @@ class TestInstrument:
         quotes = vw.get_quotes("month", notation)
         assert quotes
 
+    def test_get_quotes_max(self, cached_request):
+        # GIVEN
+        isin = "DE0006231004"
+        # WHEN user instance a new instrument
+        inst = Instrument(isin, cached_request, cached_request.path, lazy_load=False)
+        # AND selects a notation
+        notation = inst.notations[0]
+        # AND querys the onvista
+        max_quotes = inst.get_quotes("all", notation)
+        # THEN the oldest quote should be
+        assert max_quotes[0].timestamp == datetime.datetime(2000, 3, 13, 13, 0)
 
 class TestInstrumentDatabase:
     def test_instruments(self, db_path):
@@ -69,7 +80,7 @@ class TestInstrumentDatabase:
         # WHEN user wants to iter through database
         for instrument in db.instruments():
             assert instrument
-        assert instrument.name == 'VOLKSWAGEN AG VZ'
+        assert instrument.name == 'INFINEON TECHNOLOGIES AG'
 
     def test_query(self, db_path):
         # GIVEN
