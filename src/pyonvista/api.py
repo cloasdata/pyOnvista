@@ -26,7 +26,7 @@ from lxml.html import fromstring, HtmlElement
 import httpx
 # todo add support for historic values
 
-FP_MARKETS = "markets.json"
+FP_MARKETS = Path(__file__).parent / "inc/markets.json"
 
 # [timestamp,"open", "high", "low", "close", "volume"]
 get_timestamp = itemgetter(0)
@@ -273,9 +273,7 @@ class Instrument(InstrumentPersistenceMixin):
         notation_ids: list[str] = list(
             map(lambda x: x.split("=")[1], html_element.xpath('//div[@id="exchangesLayer"]/ul/li/a/@href')))
 
-        path: str = __file__
-        path = path.rsplit("\\", 1)[0] + "\\" + FP_MARKETS
-        with open(path, "r") as input_json:
+        with open(FP_MARKETS, "r") as input_json:
             mapping = dict(json.load(input_json))
         exchanges = [mapping.get(market, self.default_exchange) for market in markets]
 
