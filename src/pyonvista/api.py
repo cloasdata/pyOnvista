@@ -13,17 +13,17 @@ import datetime
 import dataclasses
 import functools
 import hashlib
-import os.path
-import pathlib
+from pathlib import Path
 import pickle
 import typing
-from lxml.html import fromstring, HtmlElement
 import json
 import requests
-from requests import Response
 import shelve
 from operator import itemgetter
 
+from requests import Response, Request
+from lxml.html import fromstring, HtmlElement
+import httpx
 # todo add support for historic values
 
 FP_MARKETS = "markets.json"
@@ -106,7 +106,7 @@ class CachedRequest(Request):
     The cache is highly recommended to avoid any abusing.
     """
 
-    def __init__(self, header: dict, path: str, validity: int):
+    def __init__(self, header: dict, path: str|Path, validity: int):
         super().__init__(header)
         self._validity = validity
         self._path = path
@@ -118,8 +118,8 @@ class CachedRequest(Request):
 
     def _load_cache(self, url: str) -> tuple[typing.Optional[datetime.datetime], typing.Optional[requests.Response]]:
         url_hash = hashlib.md5(url.encode()).hexdigest()
-        path = pathlib.Path(self._path) / url_hash[:2] / url_hash[2:]
-        if os.path.exists(path):
+        path = Path(self._path) / url_hash[:2] / url_hash[2:]
+        if path.exists():
             with open(path, "rb") as pickle_file:
                 return pickle.load(pickle_file)
         else:
@@ -127,9 +127,8 @@ class CachedRequest(Request):
 
     def _dump_cache(self, url: str, response: requests.Response):
         url_hash = hashlib.md5(url.encode()).hexdigest()
-        path = pathlib.Path(self._path) / url_hash[:2]
-        if not os.path.exists(path):
-            os.makedirs(path)
+        path = Path(self._path) / url_hash[:2]
+        path.mkdir(exist_ok=True)
         file = path / url_hash[2:]
         timestamp = datetime.datetime.today()
         obj = (timestamp, response)
@@ -174,7 +173,7 @@ class InstrumentPersistenceMixin:
 
     @property
     def db_instrument(self) -> str:
-        path = pathlib.Path(self.path) / "instrument_shelve"
+        path = Path(self.path) / "instrument_shelve"
         return path.__str__()
 
 
