@@ -9,7 +9,7 @@ setup(
     license_files = ('LICENSE',),
     author='Simon Bauer',
     author_email='code@seimenadventure.de',
-    description='A tiny API for onvista.de financial website.',
+    description='',
     packages=['pyOnvista'],
     classifiers=[
         "Programming Language :: Python :: 3",
