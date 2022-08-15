@@ -1,6 +1,6 @@
 import datetime
 
-from pyOnvista.api import Instrument, CachedRequest, InstrumentDatabase
+from pyonvista.api import Instrument, CachedRequest, InstrumentDatabase
 
 
 class Test_CacheRequest:

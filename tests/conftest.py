@@ -1,6 +1,6 @@
 import pytest
 
-from pyOnvista import CachedRequest
+from pyonvista import CachedRequest
 
 
 @pytest.fixture(scope="session")
