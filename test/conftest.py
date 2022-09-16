@@ -1,24 +1,31 @@
 import pytest
+import aiohttp
+import shelve
+from pathlib import Path
 
-from pyonvista import CachedRequest
+from pyonvista.api import PyOnVista, Instrument
 
-
-@pytest.fixture(scope="session")
-def db_path() -> str:
-    return "DE0007664039_1/"
-
-
-@pytest.fixture(scope="session")
-def cache_validity():
-    return 365
-
-
-@pytest.fixture(scope="session")
-def cached_request(db_path, cache_validity):
-    return CachedRequest(header=dict(), path=db_path, validity=cache_validity)
+INSTRUMENT_DB = Path(__file__).parent / "assets" / "instruments_for_test"
 
 @pytest.fixture()
-def response_from_cache(cached_request):
-    url = f"https://www.onvista.de/aktien/DE0007664039"
-    timestamp, response = cached_request._load_cache(url)
-    return response
+async def aio_client() -> aiohttp.ClientSession:
+    client = aiohttp.ClientSession()
+    yield client
+    await client.close()
+
+
+@pytest.fixture()
+async def onvista_api(aio_client) -> PyOnVista:
+    api = PyOnVista()
+    await api.install_client(aio_client)
+    return api
+
+@pytest.fixture()
+def instrument_vw() -> Instrument:
+    with shelve.open(str(INSTRUMENT_DB)) as db:
+        return db["DE0007664039"]
+
+@pytest.fixture()
+def instrument_etf() -> Instrument:
+    with shelve.open(str(INSTRUMENT_DB)) as db:
+        return db['IE00B42NKQ00']

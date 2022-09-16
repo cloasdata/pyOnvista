@@ -1,60 +1,44 @@
-# pyOnvista
-A tiny API for onvista.de financial website.
+# pyonvista
+A tiny python wrapper to the non-public onvista.de REST-Api.
 
-The API provides at a maximum all available chart data as can be viewed on the webpage.
-It does not scrap any recent quotes. So the prupose is to fetch historic quotes as can be viewed on the onvista chart diagrams.
+As the API is not public user shall assume that the usage of this package harms the
+website user agreements. However, this version now avoids any web scrapping for metadata.
 
-The API core uses package requests to download contents.
-The implementation of requests is very flat without deeper exception handling.
+You can search for an instrument and get its quote data. 
+The quote data can be limit by resolution and date.
 
-It uses the super fast lxml binding to C libxml2 and libxslt instead of beautiful soup
-for html parsing. xpath are hardcoded but may be user defined at a later stage.
+The wrapper now also works with instruments other than stocks. Also for example data from ETF
+can be requested. 
 
-To get the quotes from the onvista server, the api first scraps some meta data of the instrument.
-This will be stored in a shelve database. The database can be access through the provided class
-InstrumentDatabase. This avoids traffic and complies with the typical user case. 
-Once the metadata is known, the user can fetch the quotes from the server. 
-These data is polled every time get_quotes is called.
-However, it is possible to use CachedRequest instead of Request classe you poll against 
-an http cache stored locally after the first query. 
+Im not planing to add other API Endpoints at the moment as long as nobody gives me a good reason for this.
 
-## Limitations
-Does not work with ETFs or other Derivates. At the moment it does only support stocks.
+Additionally the wrapper now is asynchronous. User should be aware of asyncio or async programming.
 
 
-
-## Installation:
+## Installation
     pip install pyonvista
 
-## Please note:
-The API fakes a request from a chart shown on the instrument page. Therefore, the server sees only a normal 
-user behavior like scrolling through the chart data.
-However, there may be a misalignment between notification_id and exchange (market). Because not all
-acronyms are provided yet or proper. See also markets.json.
-The API does not validate the market opening times as provided by onvista and market. It was not recognized why onvista
-provides this data with the quote data.
+## Usage
+```python
+import asyncio
+import aiohttp
+import pprint
 
-The server may mind the scrapping action when frequencies is high. It is recommended
-to use a rotating proxy, or at least rotate user agent and let pass plenty of time.
-Please keep also terms of webpage company in mind. This script may harm the terms.
+from src.pyonvista.api import PyOnVista
 
-## Usage:
-Preliminary you need to know the ISIN of the instrument.
-Create an instrument and request quote data by calling .get_quotes
+async def main():
+    client = aiohttp.ClientSession()
+    api = PyOnVista()
+    await api.install_client(client)
+    async with client:
+        instruments = await api.search_instrument("VW")
+        instrument = await api.request_instrument(instruments[0])
+        pprint.pprint(instrument)
+        quotes = await api.request_quotes(instrument, )
+        pprint.pprint(quotes[:3])
+    await client.close()
+    await asyncio.sleep(.1)
 
-    from pyOnvista import Instrument, Request
-    
-    # make a configured request. Provide a proper header
-    user_agent = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
-    header = {'user-agent': user_agent}
-    request = Request(header=header)
-    
-    # make the instrument you wish
-    vw = Instrument("DE0007664039", request)
-    
-    # request quotes
-    quotes = vw.get_quotes("month")  # retrieve quotes from default market
-    
-    # and do some stuff
-    for quote in quotes:
-        print(quote.timestamp.isoformat(), " high: ", quote.high, " low: ", quote.low)
+if __name__ == '__main__':
+    asyncio.run(main())
+```

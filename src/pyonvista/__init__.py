@@ -1,4 +1,4 @@
-from .api import Instrument, CachedRequest, Request, InstrumentDatabase
+from .api import Instrument, PyOnVista, Notation, Quote, Market
 
-__version__ = '0.7.0'
+__version__ = '0.8.1'
 __author__ = 'Simon Bauer'
