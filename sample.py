@@ -1,25 +1,6 @@
-# pyonvista
-A tiny python wrapper to the non-public onvista.de REST-Api.
-
-As the API is not public user shall assume that the usage of this package harms the
-website user agreements. However, this version now avoids any web scrapping for metadata.
-
-You can search for an instrument and get its quote data. 
-The quote data can be limit by resolution and date.
-
-The wrapper now also works with instruments other than stocks. Also for example data from ETF
-can be requested. 
-
-Im not planing to add other API Endpoints at the moment as long as nobody gives me a good reason for this.
-
-Additionally the wrapper now is asynchronous. User should be aware of asyncio or async programming.
-
-
-## Installation
-    pip install pyonvista
-
-## Usage
-```python
+"""
+Implements a simple example
+"""
 import asyncio
 import aiohttp
 import pprint
@@ -47,4 +28,3 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-```
