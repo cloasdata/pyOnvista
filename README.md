@@ -24,7 +24,7 @@ import asyncio
 import aiohttp
 import pprint
 
-from src.pyonvista.api import PyOnVista
+from pyonvista import PyOnVista
 
 async def main():
     client = aiohttp.ClientSession()
