@@ -16,7 +16,7 @@ from typing import (
 from types import SimpleNamespace
 
 import aiohttp
-from src.pyonvista.util import make_url
+from .util import make_url
 
 ONVISTA_BASE = "https://www.onvista.de"
 ONVISTA_API_BASE = "https://api.onvista.de/api/v1"
