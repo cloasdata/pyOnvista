@@ -27,6 +27,12 @@ class TestPyOnVista:
             db[instrument.isin] = instrument
 
     @pytest.mark.asyncio
+    async def test_request_instrument(self, onvista_api, aio_client, instrument_vw):
+        async with aio_client:
+            await onvista_api.request_instrument(instrument_vw)
+        assert instrument_vw.quote
+
+    @pytest.mark.asyncio
     async def test_search_etf(self, onvista_api, aio_client):
         async with aio_client:
             instrument = (await onvista_api.search_instrument("IE00B42NKQ00"))[0]

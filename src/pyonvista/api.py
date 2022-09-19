@@ -2,6 +2,8 @@
 A tiny API for onvista.de financial website.
 
 The API provides at a maximum all available chart data as can be viewed on the webpage.
+
+todo: use pydantic model instead of parsing freestyle
 """
 import asyncio
 import inspect
@@ -25,6 +27,7 @@ snapshot_map = {
     "FUND": "funds",
     "STOCK": "stocks",
 }
+
 
 @dataclasses.dataclass
 class Quote:
@@ -64,6 +67,7 @@ class Instrument:
     isin: str
     url: str
     type: str
+    quote: Quote
     _snapshot_json: dict = dataclasses.field(repr=False)
     snapshot_valid_until: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now, repr=False)
     notations: list[Notation] = dataclasses.field(default_factory=list)
@@ -93,7 +97,7 @@ class Instrument:
         return instrument
 
 
-def _update_instrument(instrument: Instrument, data: dict):
+def _update_instrument(instrument: Instrument, data: dict, quote: dict):
     """
     Updates instrument from a json data dict
     :param instrument:
@@ -110,6 +114,17 @@ def _update_instrument(instrument: Instrument, data: dict):
     instrument.symbol = data.get("symbol", None)
     instrument.url = data["urls"]["WEBSITE"]
     instrument.type = data["entityType"]
+    instrument.quote = Quote(
+        resolution="1m",
+        timestamp=datetime.datetime.strptime(quote["datetimeBid"].split(".")[0], "%Y-%m-%dT%H:%M:%S"),
+        open=float(quote["open"]),
+        high=float(quote["high"]),
+        low=float(quote["low"]),
+        close=float(quote["last"]),  # not sure if this true
+        volume=int(quote["money"]),
+        pieces=int(quote["volume"]),
+        instrument=instrument
+    )
     return instrument
 
 
@@ -202,10 +217,10 @@ class PyOnVista:
             type_,
             f"ISIN:{instrument.isin}"
             "/snapshot"
-                       )
+        )
         data = await self._get_json(url)
         if instrument:
-            _update_instrument(instrument, data["instrument"])
+            _update_instrument(instrument, data["instrument"], data["quote"])
         else:
             instrument = Instrument.from_json(data["instrument"])
         _add_notation(instrument, notations=data["quoteList"]["list"])
