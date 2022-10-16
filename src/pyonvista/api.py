@@ -41,6 +41,32 @@ class Quote:
     pieces: int
     instrument: "Instrument"
 
+    @classmethod
+    def from_dict(cls, instrument: "Instrument", quote:dict) -> "Quote":
+        try:
+            volume = int(quote["money"])
+        except KeyError:
+            # not stonks
+            volume = int(quote["totalMoney"])
+        try:
+            pieces = int(quote["volume"])
+        except KeyError:
+            # not stonks
+            pieces = int(quote['volumeBid'])
+
+        quote= cls(
+            resolution="1m",
+            timestamp=datetime.datetime.strptime(quote["datetimeLast"].split(".")[0], "%Y-%m-%dT%H:%M:%S"),
+            open=float(quote["open"]),
+            high=float(quote["high"]),
+            low=float(quote["low"]),
+            close=float(quote["last"]),  # not sure if this true
+            volume=volume,
+            pieces=pieces,
+            instrument=instrument
+        )
+        return quote
+
 
 @dataclasses.dataclass
 class Market:
@@ -97,7 +123,7 @@ class Instrument:
         return instrument
 
 
-def _update_instrument(instrument: Instrument, data: dict, quote: dict):
+def _update_instrument(instrument: Instrument, data: dict, quote: dict = None):
     """
     Updates instrument from a json data dict
     :param instrument:
@@ -114,17 +140,8 @@ def _update_instrument(instrument: Instrument, data: dict, quote: dict):
     instrument.symbol = data.get("symbol", None)
     instrument.url = data["urls"]["WEBSITE"]
     instrument.type = data["entityType"]
-    instrument.quote = Quote(
-        resolution="1m",
-        timestamp=datetime.datetime.strptime(quote["datetimeBid"].split(".")[0], "%Y-%m-%dT%H:%M:%S"),
-        open=float(quote["open"]),
-        high=float(quote["high"]),
-        low=float(quote["low"]),
-        close=float(quote["last"]),  # not sure if this true
-        volume=int(quote["money"]),
-        pieces=int(quote["volume"]),
-        instrument=instrument
-    )
+    if quote:
+        instrument.quote = Quote.from_dict(instrument, quote)
     return instrument
 
 
