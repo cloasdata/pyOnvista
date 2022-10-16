@@ -93,7 +93,7 @@ class Instrument:
     isin: str
     url: str
     type: str
-    quote: Quote
+    quote: Quote = dataclasses.field(repr=False)
     _snapshot_json: dict = dataclasses.field(repr=False)
     snapshot_valid_until: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now, repr=False)
     notations: list[Notation] = dataclasses.field(default_factory=list)
