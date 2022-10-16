@@ -122,6 +122,11 @@ class Instrument:
         _update_instrument(instrument, data)
         return instrument
 
+    @classmethod
+    def from_isin(cls, isin:str) -> "Instrument":
+        # todo: implement
+        raise NotImplementedError("Constructor not implemented yet")
+
 
 def _update_instrument(instrument: Instrument, data: dict, quote: dict = None):
     """
