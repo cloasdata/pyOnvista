@@ -258,7 +258,7 @@ class PyOnVista:
             )
             for date, first, last, high, low, volume, pieces in quotes:
                 result.append(
-                    Quote(resolution, datetime.datetime.fromtimestamp(date / 1000), first, high, low, last, volume,
+                    Quote(resolution, datetime.datetime.fromtimestamp(date), first, high, low, last, volume,
                           pieces, instrument)
                 )
 
