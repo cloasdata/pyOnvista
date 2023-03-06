@@ -230,7 +230,7 @@ class PyOnVista:
             notation = instrument.notations[0]
 
         start = start or datetime.datetime.now() - datetime.timedelta(days=7)
-        end = end or datetime.datetime.now()
+        end = end or datetime.datetime.now()+datetime.timedelta(days=1)
         request_data = make_url(
             ONVISTA_API_BASE,
             "instruments",
