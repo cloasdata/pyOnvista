@@ -102,7 +102,7 @@ def _update_instrument(instrument: Instrument, data: dict):
     """
     if data.get("expires", None):
         instrument.snapshot_valid_until = datetime.datetime.fromtimestamp(
-            float(data["expires"]) / 1000)
+            float(data["expires"]))
     instrument.last_change = datetime.datetime.now()
     instrument.uid = data["entityValue"]
     instrument.name = data["name"]
