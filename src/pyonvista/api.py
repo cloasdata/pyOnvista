@@ -253,7 +253,7 @@ class PyOnVista:
             instrument: Instrument,
             start: datetime.datetime = None,
             end: datetime.datetime = None,
-            resolution: Literal["1m", "15m", "1d"] = "15m",
+            resolution: Literal["1m", "15m", "1D"] = "15m",
             notation: Notation = None,
 
     ) -> list[Quote]:
