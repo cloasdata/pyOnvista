@@ -2,6 +2,8 @@
 A tiny API for onvista.de financial website.
 
 The API provides at a maximum all available chart data as can be viewed on the webpage.
+
+todo: use pydantic model instead of parsing freestyle
 """
 import asyncio
 import inspect
@@ -26,6 +28,7 @@ snapshot_map = {
     "STOCK": "stocks",
 }
 
+
 @dataclasses.dataclass
 class Quote:
     resolution: str
@@ -37,6 +40,32 @@ class Quote:
     volume: int
     pieces: int
     instrument: "Instrument"
+
+    @classmethod
+    def from_dict(cls, instrument: "Instrument", quote:dict) -> "Quote":
+        try:
+            volume = int(quote["money"])
+        except KeyError:
+            # not stonks
+            volume = int(quote["totalMoney"])
+        try:
+            pieces = int(quote["volume"])
+        except KeyError:
+            # not stonks
+            pieces = int(quote['volumeBid'])
+
+        quote= cls(
+            resolution="1m",
+            timestamp=datetime.datetime.strptime(quote["datetimeLast"].split(".")[0], "%Y-%m-%dT%H:%M:%S"),
+            open=float(quote["open"]),
+            high=float(quote["high"]),
+            low=float(quote["low"]),
+            close=float(quote["last"]),  # not sure if this true
+            volume=volume,
+            pieces=pieces,
+            instrument=instrument
+        )
+        return quote
 
 
 @dataclasses.dataclass
@@ -64,6 +93,7 @@ class Instrument:
     isin: str
     url: str
     type: str
+    quote: Quote = dataclasses.field(repr=False)
     _snapshot_json: dict = dataclasses.field(repr=False)
     snapshot_valid_until: datetime.datetime = dataclasses.field(default_factory=datetime.datetime.now, repr=False)
     notations: list[Notation] = dataclasses.field(default_factory=list)
@@ -92,8 +122,13 @@ class Instrument:
         _update_instrument(instrument, data)
         return instrument
 
+    @classmethod
+    def from_isin(cls, isin:str) -> "Instrument":
+        # todo: implement
+        raise NotImplementedError("Constructor not implemented yet")
 
-def _update_instrument(instrument: Instrument, data: dict):
+
+def _update_instrument(instrument: Instrument, data: dict, quote: dict = None):
     """
     Updates instrument from a json data dict
     :param instrument:
@@ -110,6 +145,8 @@ def _update_instrument(instrument: Instrument, data: dict):
     instrument.symbol = data.get("symbol", None)
     instrument.url = data["urls"]["WEBSITE"]
     instrument.type = data["entityType"]
+    if quote:
+        instrument.quote = Quote.from_dict(instrument, quote)
     return instrument
 
 
@@ -202,10 +239,10 @@ class PyOnVista:
             type_,
             f"ISIN:{instrument.isin}"
             "/snapshot"
-                       )
+        )
         data = await self._get_json(url)
         if instrument:
-            _update_instrument(instrument, data["instrument"])
+            _update_instrument(instrument, data["instrument"], data["quote"])
         else:
             instrument = Instrument.from_json(data["instrument"])
         _add_notation(instrument, notations=data["quoteList"]["list"])
@@ -216,7 +253,7 @@ class PyOnVista:
             instrument: Instrument,
             start: datetime.datetime = None,
             end: datetime.datetime = None,
-            resolution: Literal["1m", "15m", "1d"] = "15m",
+            resolution: Literal["1m", "15m", "1D"] = "15m",
             notation: Notation = None,
 
     ) -> list[Quote]:
