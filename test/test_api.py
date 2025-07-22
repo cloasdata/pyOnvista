@@ -21,7 +21,7 @@ class TestPyOnVista:
     async def test_search_instrument(self, onvista_api, aio_client):
         async with aio_client:
             instrument = (await onvista_api.search_instrument("vw"))[0]
-        assert instrument.name == "Volkswagen VZ"
+        assert instrument.name == "Volkswagen (VW) Vz"
         # update instrument test db here
         with shelve.open(str(INSTRUMENT_DB)) as db:
             db[instrument.isin] = instrument
