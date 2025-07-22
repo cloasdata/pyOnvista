@@ -102,7 +102,7 @@ def _update_instrument(instrument: Instrument, data: dict):
     """
     if data.get("expires", None):
         instrument.snapshot_valid_until = datetime.datetime.fromtimestamp(
-            float(data["expires"]) / 1000)
+            float(data["expires"]))
     instrument.last_change = datetime.datetime.now()
     instrument.uid = data["entityValue"]
     instrument.name = data["name"]
@@ -230,7 +230,7 @@ class PyOnVista:
             notation = instrument.notations[0]
 
         start = start or datetime.datetime.now() - datetime.timedelta(days=7)
-        end = end or datetime.datetime.now()
+        end = end or datetime.datetime.now()+datetime.timedelta(days=1)
         request_data = make_url(
             ONVISTA_API_BASE,
             "instruments",
@@ -258,7 +258,7 @@ class PyOnVista:
             )
             for date, first, last, high, low, volume, pieces in quotes:
                 result.append(
-                    Quote(resolution, datetime.datetime.fromtimestamp(date / 1000), first, high, low, last, volume,
+                    Quote(resolution, datetime.datetime.fromtimestamp(date), first, high, low, last, volume,
                           pieces, instrument)
                 )
 
